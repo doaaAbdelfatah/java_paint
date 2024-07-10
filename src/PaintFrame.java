@@ -11,13 +11,14 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class PaintFrame  extends JFrame {
-    private JButton buttonLine , buttonRect , buttonOval , buttonColor , buttonBackGroundColor , buttonForGroundColor;
+    private JButton buttonLine , buttonRect ,buttonSqr , buttonOval ,buttonCircle, buttonColor , buttonBackGroundColor , buttonForGroundColor;
     private  JButton [] colorsArray ;
     private  PaintPanel paintPanel;
     private  ArrayList<MyShape> shapes ;
     private  String selectedType ="Line";
+    private  boolean fillShape = true;
 
-    private int x1 ,x2 , y1,y2;
+    private int x1 ,x2 , y1,y2 , shapeStrokWidth;
 
     private String selectedColorButton = "for";
     public PaintFrame(){
@@ -32,7 +33,7 @@ public class PaintFrame  extends JFrame {
         toolBar.setPreferredSize(new Dimension(0,150));
         this.getContentPane().add(toolBar , BorderLayout.NORTH);
 
-        Dimension dimension  = new Dimension(70,70);
+        Dimension dimension  = new Dimension(70,50);
         Border border = BorderFactory.createLineBorder(Color.GRAY);
 
         JPanel panelClipboard = new JPanel();
@@ -46,10 +47,12 @@ public class PaintFrame  extends JFrame {
 
         buttonLine = new JButton("line");
         buttonRect = new JButton("Rect");
+        buttonSqr = new JButton("Square");
         buttonOval = new JButton("Oval");
+        buttonCircle = new JButton("Circle");
 
         buttonRect.addActionListener(e->{
-            selectedType = "Rect";
+            selectedType = e.getActionCommand();
         });
 
         buttonLine.addActionListener(e->{
@@ -59,10 +62,18 @@ public class PaintFrame  extends JFrame {
         buttonOval.addActionListener(e->{
             selectedType = "Oval";
         });
+        buttonCircle.addActionListener(e->{
+            selectedType = "Circle";
+        });
+        buttonSqr.addActionListener(e->{
+            selectedType = e.getActionCommand();
+        });
 
         panelShapes.add(buttonLine);
         panelShapes.add(buttonRect);
+        panelShapes.add(buttonSqr);
         panelShapes.add(buttonOval);
+        panelShapes.add(buttonCircle);
 
         for (Component component : panelShapes.getComponents()){
             if ( component instanceof JButton){
@@ -73,6 +84,21 @@ public class PaintFrame  extends JFrame {
             }
         }
 
+        String [] thikness = {"1" ,"2" ,"3" ,"4" , "5" , "6" ,"7" ,"8" , "9" ,"10"};
+        JComboBox<String> comboBox = new JComboBox<>(thikness);
+        comboBox.setPreferredSize(new Dimension(100, 50));
+        panelShapes.add(comboBox);
+        comboBox.addItemListener(e -> {
+            String selectedItem =e.getItem().toString();
+            shapeStrokWidth = Integer.parseInt(selectedItem);
+        });
+
+        JCheckBox fillCheckBox = new JCheckBox("Fill");
+        fillCheckBox.setSelected(fillShape);
+        panelShapes.add(fillCheckBox);
+        fillCheckBox.addActionListener(e->{
+            fillShape= fillCheckBox.isSelected();
+        });
         toolBar.addSeparator();
 
         JPanel panelColors = new JPanel();
@@ -156,20 +182,25 @@ public class PaintFrame  extends JFrame {
                 graphics2D.setStroke(new BasicStroke(shape.strokWidth));
 
                 switch (shape.type){
+                    case "Square":
+                        h =w;
                     case "Rect" :
                         Rectangle2D rectangle2D = new Rectangle2D.Float(shape.x1,shape.y1,w,h);
                         graphics2D.setColor(shape.backGroundColor);
-                        graphics2D.fill(rectangle2D);
+                        if(shape.fill) graphics2D.fill(rectangle2D);
                         graphics2D.setColor(shape.forGroundColor);
                         graphics2D.draw(rectangle2D);
                         break;
+                    case  "Circle":
+                        h =w;
                     case "Oval" :
                         Ellipse2D ellipse2D = new Ellipse2D.Float(shape.x1,shape.y1,w,h);
                         graphics2D.setColor(shape.backGroundColor);
-                        graphics2D.fill(ellipse2D);
+                        if(shape.fill) graphics2D.fill(ellipse2D);
                         graphics2D.setColor(shape.forGroundColor);
                         graphics2D.draw(ellipse2D);
                         break;
+
                     case "Line" :
                         Line2D line2D = new Line2D.Float(shape.x1,shape.y1,shape.x2,shape.y2);
                         graphics2D.setColor(shape.forGroundColor);
@@ -200,11 +231,12 @@ public class PaintFrame  extends JFrame {
             shape.type =selectedType;
             shape.backGroundColor = buttonBackGroundColor.getBackground();
             shape.forGroundColor = buttonForGroundColor.getBackground();
-            shape.strokWidth = 3;
+            shape.strokWidth = shapeStrokWidth ;
             shape.x1 =x1;
             shape.y1 =y1;
             shape.x2 =x2;
             shape.y2 =y2;
+            shape.fill = fillShape;
             shapes.add(shape);
             paintPanel.repaint();
         }
@@ -230,6 +262,8 @@ public class PaintFrame  extends JFrame {
         int strokWidth;
 
         int x1 , x2 , y1 ,y2;
+
+        boolean fill;
     }
 
 }
