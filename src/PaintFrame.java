@@ -2,8 +2,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -11,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class PaintFrame  extends JFrame {
-    private JButton buttonLine , buttonRect ,buttonSqr , buttonOval ,buttonCircle, buttonColor , buttonBackGroundColor , buttonForGroundColor;
+    private JButton buttonLine ,buttonPen , buttonEraser  ,buttonText , buttonRect ,buttonSqr , buttonOval ,buttonCircle, buttonColor , buttonBackGroundColor , buttonForGroundColor;
     private  JButton [] colorsArray ;
     private  PaintPanel paintPanel;
     private  ArrayList<MyShape> shapes ;
@@ -45,35 +44,26 @@ public class PaintFrame  extends JFrame {
         panelShapes.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black ) , "Shapes" , TitledBorder.CENTER , TitledBorder.BOTTOM));
         toolBar.add(panelShapes);
 
-        buttonLine = new JButton("line");
+        buttonPen = new JButton(new ImageIcon("C:\\Users\\dode3\\IdeaProjects\\MyPaintProgram\\src\\pen.png"));
+        buttonPen.setActionCommand("Pen");
+        buttonEraser = new JButton("Eraser");
+        buttonLine = new JButton("Linexx"); buttonLine.setActionCommand("Line");
         buttonRect = new JButton("Rect");
         buttonSqr = new JButton("Square");
         buttonOval = new JButton("Oval");
         buttonCircle = new JButton("Circle");
+        buttonText = new JButton("Text");
 
-        buttonRect.addActionListener(e->{
-            selectedType = e.getActionCommand();
-        });
+        BtnAction btnAction = new BtnAction();
 
-        buttonLine.addActionListener(e->{
-            selectedType = "Line";
-        });
-
-        buttonOval.addActionListener(e->{
-            selectedType = "Oval";
-        });
-        buttonCircle.addActionListener(e->{
-            selectedType = "Circle";
-        });
-        buttonSqr.addActionListener(e->{
-            selectedType = e.getActionCommand();
-        });
-
+        panelShapes.add(buttonPen);
+        panelShapes.add(buttonEraser);
         panelShapes.add(buttonLine);
         panelShapes.add(buttonRect);
         panelShapes.add(buttonSqr);
         panelShapes.add(buttonOval);
         panelShapes.add(buttonCircle);
+        panelShapes.add(buttonText);
 
         for (Component component : panelShapes.getComponents()){
             if ( component instanceof JButton){
@@ -81,10 +71,11 @@ public class PaintFrame  extends JFrame {
                 button.setPreferredSize(dimension);
                 button.setBorder(border);
                 button.setContentAreaFilled(false);
+                button.addActionListener(btnAction);
             }
         }
 
-        String [] thikness = {"1" ,"2" ,"3" ,"4" , "5" , "6" ,"7" ,"8" , "9" ,"10"};
+        String [] thikness = {"1" ,"2" ,"3" ,"4" , "5" , "6" ,"7" ,"8" , "9" ,"10" , "20" , "50"};
         JComboBox<String> comboBox = new JComboBox<>(thikness);
         comboBox.setPreferredSize(new Dimension(100, 50));
         panelShapes.add(comboBox);
@@ -159,6 +150,7 @@ public class PaintFrame  extends JFrame {
         });
         paintPanel=new PaintPanel();
         paintPanel.addMouseListener(paintPanel);
+        paintPanel.addMouseMotionListener(paintPanel);
         paintPanel.setBackground(Color.white);
         this.getContentPane().add( paintPanel,BorderLayout.CENTER);
 
@@ -169,7 +161,7 @@ public class PaintFrame  extends JFrame {
     }
 
 
-    class PaintPanel extends JPanel implements MouseListener {
+    class PaintPanel extends JPanel implements MouseListener , MouseMotionListener {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -177,11 +169,21 @@ public class PaintFrame  extends JFrame {
             Graphics2D graphics2D = (Graphics2D) g;
 
             for (MyShape shape :shapes){
-                int w = shape.x2 - shape.x1;
-                int h = shape.y2 - shape.y1;
+                int w = Math.abs( shape.x2 - shape.x1);
+                int h = Math.abs(shape.y2 - shape.y1);
                 graphics2D.setStroke(new BasicStroke(shape.strokWidth));
 
                 switch (shape.type){
+                    case "Text":
+                        if(shape.text != null){
+                            System.out.println(shape.text);
+                            graphics2D.setColor(shape.forGroundColor);
+                            graphics2D.setFont(new Font("Tahoma" ,Font.BOLD , shape.strokWidth));
+                            graphics2D.drawString(shape.text , shape.x1 ,shape.y1);
+
+                        }
+
+                        break;
                     case "Square":
                         h =w;
                     case "Rect" :
@@ -206,20 +208,45 @@ public class PaintFrame  extends JFrame {
                         graphics2D.setColor(shape.forGroundColor);
                         graphics2D.draw(line2D);
                         break;
-                }
+                    case "Pen" :case "Eraser" :
+                        Ellipse2D rectangle2D2 = new Ellipse2D.Float(shape.x1,shape.y1,shape.strokWidth,shape.strokWidth);
+//                        Rectangle2D rectangle2D2 = new Rectangle2D.Float(shape.x1,shape.y1,shape.strokWidth,shape.strokWidth);
+                        graphics2D.setColor(shape.forGroundColor);
+                        graphics2D.fill(rectangle2D2);
+
+                        break;
+
+//                        Line2D line2D2 = new Line2D.Float(shape.x1,shape.y1,shape.x1 + shape.strokWidth,shape.y1 + shape.strokWidth);
+//                        graphics2D.setColor(shape.forGroundColor);
+//                        graphics2D.draw(line2D2);
+//                        break;
+            }
             }
 
         }
 
         @Override
         public void mouseClicked(MouseEvent e) {
-
+                if (selectedType.equals("Text")){
+                    String msg =JOptionPane.showInputDialog(null , "Enter your text");
+                    MyShape shape = new MyShape();
+                    shape.type =selectedType;
+                    shape.text = msg;
+                    shape.forGroundColor = buttonForGroundColor.getBackground();
+                    shape.strokWidth = shapeStrokWidth ;
+                    shape.x1 =e.getX();
+                    shape.y1 =e.getY();
+                    shapes.add(shape);
+                    paintPanel.repaint();
+                }
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
             x1 = e.getX();
             y1 = e.getY();
+
+
         }
 
         @Override
@@ -234,8 +261,24 @@ public class PaintFrame  extends JFrame {
             shape.strokWidth = shapeStrokWidth ;
             shape.x1 =x1;
             shape.y1 =y1;
-            shape.x2 =x2;
-            shape.y2 =y2;
+            if (x1 <x2 && y1 > y2  ){
+                shape.x2 = x2;
+                shape.y2 = shape.y1;
+                shape.y1 = y2;
+            }else if (x1 > x2 && y1 > y2  ){
+                shape.x2 =shape.x1;
+                shape.x1 =x2;
+                shape.y2 = shape.y1;
+                shape.y1 = y2;
+            }else if (x1 > x2 && y1 < y2  ){
+                shape.x2 =shape.x1;
+                shape.x1 =x2;
+                shape.y2 = y2;
+            }else{
+                shape.x2 =x2;
+                shape.y2 =y2;
+            }
+
             shape.fill = fillShape;
             shapes.add(shape);
             paintPanel.repaint();
@@ -250,10 +293,38 @@ public class PaintFrame  extends JFrame {
         public void mouseExited(MouseEvent e) {
 
         }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (selectedType.equals("Pen") || selectedType.equals("Eraser")){
+
+                MyShape shape = new MyShape();
+                shape.type =selectedType;
+                if(selectedType.equals("Eraser")){
+                    shape.forGroundColor = Color.white;
+                }else{
+                    shape.forGroundColor = buttonForGroundColor.getBackground();
+                }
+
+                shape.strokWidth = shapeStrokWidth ;
+                shape.x1 =e.getX();
+                shape.y1 =e.getY();
+                shape.fill = fillShape;
+                shapes.add(shape);
+                paintPanel.repaint();
+            }
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+
+        }
     }
 
 
     class MyShape {
+
+        String text ;
         Color backGroundColor ;
         Color forGroundColor ;
 
@@ -264,6 +335,15 @@ public class PaintFrame  extends JFrame {
         int x1 , x2 , y1 ,y2;
 
         boolean fill;
+    }
+
+    class  BtnAction implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            selectedType = e.getActionCommand();
+            System.out.println(e.getActionCommand());
+        }
     }
 
 }
