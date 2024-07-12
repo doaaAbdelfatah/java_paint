@@ -19,9 +19,11 @@ public class PaintFrame  extends JFrame {
 
     private int x1 ,x2 , y1,y2 , shapeStrokWidth;
 
+    ImageIcon penIcon;
+
     private String selectedColorButton = "for";
     public PaintFrame(){
-
+        penIcon=new ImageIcon("C:\\Users\\dode3\\IdeaProjects\\MyPaintProgram\\src\\pen.png");
         shapes = new ArrayList<>();
 
         setBounds(400,150,700,600);
@@ -44,7 +46,7 @@ public class PaintFrame  extends JFrame {
         panelShapes.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black ) , "Shapes" , TitledBorder.CENTER , TitledBorder.BOTTOM));
         toolBar.add(panelShapes);
 
-        buttonPen = new JButton(new ImageIcon("C:\\Users\\dode3\\IdeaProjects\\MyPaintProgram\\src\\pen.png"));
+        buttonPen = new JButton(penIcon);
         buttonPen.setActionCommand("Pen");
         buttonEraser = new JButton("Eraser");
         buttonLine = new JButton("Linexx"); buttonLine.setActionCommand("Line");
@@ -149,6 +151,7 @@ public class PaintFrame  extends JFrame {
             }
         });
         paintPanel=new PaintPanel();
+        paintPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
         paintPanel.addMouseListener(paintPanel);
         paintPanel.addMouseMotionListener(paintPanel);
         paintPanel.setBackground(Color.white);
@@ -342,6 +345,19 @@ public class PaintFrame  extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             selectedType = e.getActionCommand();
+
+            switch (selectedType){
+                case "Text":
+                    paintPanel.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+                    break;
+                case "Pen":
+                    paintPanel.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(penIcon.getImage() , new Point(0,0) ,"pen"));
+                    break;
+                default:
+                    paintPanel.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+
+            }
+
             System.out.println(e.getActionCommand());
         }
     }
